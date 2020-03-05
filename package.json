@@ -1,0 +1,26 @@
+{
+  "name": "bd-project",
+  "version": "1.0.0",
+  "description": "BD2 application project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "server": "node server/index.js",
+    "watch:server": "nodemon server/index.js",
+    "start": "node server/index.js"
+  },
+  "author": "Ursescu Ionut",
+  "license": "GPL-3.0-or-later",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "express-handlebars": "^3.1.0",
+    "jquery": "^3.4.1",
+    "mysql2": "^2.1.0"
+  },
+  "devDependencies": {
+    "babel-eslint": "^10.0.3",
+    "eslint": "^6.8.0",
+    "nodemon": "^2.0.2"
+  }
+}

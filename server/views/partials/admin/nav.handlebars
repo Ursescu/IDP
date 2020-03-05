@@ -1,0 +1,25 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="navbar-brand" href="#">Ursescu Cinema - Admin view</div>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+    aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item {{#if active.insert}}active{{/if}}">
+        <a class="nav-link" href="/admin">Insert movie </a>
+      </li>
+      <li class="nav-item {{#if active.schedule}} active {{/if}}">
+        <a class="nav-link" href="/admin/schedule">Schedule movie </a>
+      </li>
+      <li class="nav-item  {{#if active.raport}} active {{/if}}">
+        <a class="nav-link" href="/admin/raport">Raport</a>
+      </li>
+      </li>
+      <li class="nav-item ">
+        <a class="nav-link" href="/">Client view</a>
+      </li>
+    </ul>
+  </div>
+</nav>
