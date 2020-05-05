@@ -1,0 +1,119 @@
+<div class="container mt-5">
+    <h1>Upload videos for online cinema</h1>
+
+    <div class="input-group">
+        <div class="input-group-prepend">
+            <button type="button" class="input-group-text btn btn-light" id="upload_video">Upload</button>
+        </div>
+        <div class="custom-file">
+            <input type="file" class="custom-file-input" id="inputGroupFile01" aria-describedby="upload_video" required>
+            <label class="custom-file-label" for="inputGroupFile01">Choose file</label>
+        </div>
+    </div>
+
+    <table class="table table-hover mt-5">
+        <thead>
+            <tr>
+                <th scope="col">Movie</th>
+                <th scope="col">Status </th>
+                <th scope="col">Duration</th>
+                <th scope="col">Available</th>
+                <th scope="col">Id</th>
+                <th scope="col">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each movies}}
+            <tr style="cursor:pointer" class='clickable-row' data-href='/cinema/{{server_id}}'>
+                <td>{{name}}</td>
+                <td>{{status}}</td>
+                <td>{{duration}}</td>
+                <td>{{available}}</td>
+                <td>{{server_id}}</td>
+                <td>{{#if (done status) }}
+                    {{#if (aval available) }}
+                    <button data-id="{{server_id}}" type="button" class="make_un btn btn-warning">Make
+                        Unavailable</button>
+                    {{else}}
+                    <button data-id="{{server_id}}" type="button" class="make_av btn btn-success">Make
+                        Available</button>
+                    {{/if}}
+                    {{else}} Not processed {{/if}}</td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+</div>
+<script>
+    var basename = function (str) {
+        return str.split('\\').pop().split('/').pop();
+    }
+
+    $(document).ready(function () {
+        $('#inputGroupFile01').on('change', function () {
+            //get the file name
+            var fileName = $(this).val();
+            //replace the "Choose a file" label
+            $(this).next('.custom-file-label').html(basename(fileName));
+        });
+
+        $('#upload_video').click(function () {
+
+            var file = $('input[type="file"]').val().trim();
+            if (!file) {
+                console.log("No file");
+
+                return;
+            }
+            var formData = new FormData();
+            // Attach file
+            formData.append('file', $('input[type=file]')[0].files[0]);
+
+            console.log("Upload video");
+
+            $.ajax({
+                type: "POST",
+                url: "{{config.streaming.url}}/transcode",
+                data: formData,
+                success: (response) => {
+                    location.reload(true);
+                },
+                contentType: false,
+                processData: false,
+            });
+            e.stopPropagation();
+        });
+
+        $(".clickable-row").click(function () {
+            window.location = $(this).data("href");
+        });
+
+        $('.make_av').click(function (e) {
+            $.ajax({
+                type: "POST",
+                url: `/api/cinema/available/${$(this).data('id')}/1`,
+                success: (response) => {
+                    console.log(response);
+                    if (response.ok == true) {
+                        location.reload(true);
+                    }
+                },
+            });
+            e.stopPropagation();
+        });
+        $('.make_un').click(function (e) {
+            $.ajax({
+                type: "POST",
+                url: `/api/cinema/available/${$(this).data('id')}/0`,
+                success: (response) => {
+                    console.log(response);
+                    if (response.ok == true) {
+                        location.reload(true);
+                    }
+                },
+            });
+            e.stopPropagation();
+        });
+    });
+
+</script>

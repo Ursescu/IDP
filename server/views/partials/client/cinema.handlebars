@@ -1,0 +1,29 @@
+<div class="container mt-5">
+    <div class="text-center">
+        <h1>Online cinema</h1>
+    </div>
+    <table class="table table-hover mt-5">
+        <thead>
+            <tr>
+                <th scope="col">Movie</th>
+                <th scope="col">Duration</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each movies}}
+            <tr style="cursor:pointer" class='clickable-row' data-href='/cinema/{{server_id}}'>
+                <td>{{name}}</td>
+                <td>{{duration}}</td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $(".clickable-row").click(function () {
+            window.location = $(this).data("href");
+        });
+    });
+</script>

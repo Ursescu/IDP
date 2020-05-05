@@ -4,6 +4,7 @@ const mysql = require('mysql2/promise');
 const exphbs = require('express-handlebars');
 const bodyParser = require('body-parser');
 const path = require('path');
+const config = require('./config');
 
 
 app.use(bodyParser.urlencoded({
@@ -72,7 +73,7 @@ app.get('/schedules/:id', async (req, res) => {
     if (schedule[0].length == 0 || scheduleSeats[0].length == 0) {
         res.status(404).render('notfound');
         return;
-    }
+    } 
 
     res.render('home', {
         active: {
@@ -87,6 +88,51 @@ app.get('/schedules/:id', async (req, res) => {
                 return measuredTime.toISOString().substr(11, 8);
             },
         },
+    });
+});
+
+app.get('/cinema', async(req, res) => {
+
+    let [movies, ] = await connection.execute('SELECT * FROM `online_movies` WHERE `status` = "done" AND `available` = TRUE');
+
+    movies = movies.map(movie => {
+
+        return {
+            ...movie,
+            server_url: `${config.static.url}/static/cinema/${movie.path}`,
+        };
+    });
+
+    res.render('home', {
+        active: {
+            cinema: true,
+        },
+        movies: movies,
+    });
+});
+
+app.get('/cinema/:id', async(req, res) =>{
+
+    
+    if (!req.params.id) {
+        return res.status(404).render('notfound');
+    }
+
+    let [movies, ] = await connection.execute('SELECT * FROM `online_movies` WHERE `status` = "done" AND `available` = TRUE AND `server_id` = ?', [req.params.id]);
+    if (!movies.length) {
+        return res.status(404).render('notfound');
+    }
+
+    let movie = movies[0];
+
+    res.render('home', {
+        active: {
+            cinema_movie: true,
+        },  
+        movie: {
+            name: movie.name,
+            server_url: `${config.static.url}/static/cinema/${movie.path}`,
+        }
     });
 });
 
@@ -168,6 +214,77 @@ app.get('/admin/raport', async (req, res) => {
         },
         schedules: schedules[0],
     });
+});
+
+app.get('/admin/cinema', async(req, res) => {
+    let [movies, ] = await connection.execute('SELECT * FROM `online_movies`');
+
+    movies = movies.map(movie => {
+        return {
+            ...movie,
+            server_url: `${config.static.url}/static/cinema/${movie.path}`,
+        };
+    });
+
+    res.render('admin', {
+        active: {
+            cinema: true,
+        },
+        movies: movies,
+        config: {
+            streaming: {
+                url: config.streaming.url,
+            }
+        },
+        helpers: {
+            convertTime(seconds) {
+                let measuredTime = new Date(null);
+                measuredTime.setSeconds(seconds); // specify value of SECONDS
+                return measuredTime.toISOString().substr(11, 8);
+            },
+
+            done(status) {
+                return status == 'done';
+            },
+            aval(aval) {
+                return aval == 1;
+            }
+        },
+    })
+});
+
+app.post(`/api/cinema/available/:id/:value`, async (req, res) => {
+    if (!req.params.id || !req.params.value) {
+        return res.send({
+            ok: false,
+            reason: "Not id or value",
+        });
+    }
+
+    let [movies, ] = await connection.execute('SELECT * FROM `online_movies` WHERE `server_id` = ?', [req.params.id]);
+    if (!movies.length) {
+        return res.send({
+            ok: false,
+            reason: "Not found",
+        });
+    }
+
+    let movie = movies[0];
+
+    if (movie.status != 'done') {
+        return res.send({
+            ok: false,
+            reason: 'Movie not processed',
+        });
+    }
+    
+    let value = !!parseInt(req.params.value);
+
+    const [rows, ] = await connection.execute('UPDATE `online_movies` SET `available` = ? WHERE `server_id` = ?', [value, req.params.id]);
+    res.send({
+        ok: true,
+        reason: 'Updated with success',
+    })
 });
 
 app.post('/api/insertmovie', async (req, res) => {
@@ -382,7 +499,3 @@ app.use((req, res) => {
 
 const port = 80;
 app.listen(port, () => console.log(`Server listening on port ${port}!`));
-
-
-
-
